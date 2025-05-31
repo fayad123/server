@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const BusinessUser = require("../models/BusinessUser");
-const {hashSync, compareSync} = require("bcryptjs");
+const {hashSync} = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const _ = require("lodash");
 const Service = require("../models/Services");
 const Joi = require("joi");
+const auth = require("../middlewares/auth");
 
 const businessUserSchema = Joi.object({
 	businessName: Joi.string().required(),
@@ -18,6 +19,10 @@ const businessUserSchema = Joi.object({
 		street: Joi.string().required().min(2),
 	}),
 	category: Joi.string().required(),
+	isSubscribed: Joi.boolean().required(),
+	planId: Joi.string()
+		.valid("free", "basic", "gold", "premium", "enterprise")
+		.default("free"),
 });
 
 // Register new Business user
@@ -68,14 +73,136 @@ router.post("/", async (req, res) => {
 
 		// create token
 		const token = jwt.sign(
-			_.pick(user, ["_id", "businessName", "role"]),
+			_.pick(user, [
+				"_id",
+				"businessName",
+				"email",
+				"planId",
+				"isSubscribed",
+				"subscriptionDate",
+				"expiryDate",
+			]),
 			process.env.JWT_SECRET,
+			{expiresIn: "1d"},
 		);
 
 		// send the token as response
 		res.status(201).send(token);
 	} catch (error) {
 		console.log(error);
+		res.status(500).send(error.message);
+	}
+});
+
+const planeSchema = Joi.object({
+	isSubscribed: Joi.boolean().required(),
+	planId: Joi.string()
+		.valid("free", "basic", "gold", "premium", "enterprise")
+		.required(),
+});
+
+// get user subscription
+router.get("/:vendorId", async (req, res) => {
+	try {
+		// עדכון בבסיס הנתונים
+		const vendorPlane = await BusinessUser.findById(req.params.vendorId,{planId:1}).select(
+			"-password",
+		);
+		if (!vendorPlane) return res.status(404).send("Vendor subscription not found");
+
+
+
+		res.status(200).send(vendorPlane);
+	} catch (error) {
+		res.status(500).send(error.message);
+	}
+});
+
+// Update user subscription
+router.patch("/:vendorId", auth, async (req, res) => {
+	try {
+		// validate body
+		const {error, value} = planeSchema.validate(req.body);
+		if (error) return res.status(400).send(error.details[0].message);
+
+		const planDurations = {
+			free: 0,
+			basic: 30,
+			gold: 30,
+			premium: 30,
+			enterprise: 30,
+		};
+
+		const getExpiryDate = (planId) => {
+			const duration = planDurations[planId];
+			if (duration === undefined) return null;
+
+			const expiryDate = new Date();
+			expiryDate.setDate(expiryDate.getDate() + duration);
+			return expiryDate;
+		};
+
+		const updateData = {
+			isSubscribed: value.isSubscribed,
+			planId: value.planId,
+		};
+
+		// אם רוצים להירשם
+		if (value.isSubscribed) {
+			if (value.planId === "free") {
+				return res.status(400).json({
+					success: false,
+					message: "Cannot subscribe to the free package",
+				});
+			}
+
+			const expiry = getExpiryDate(value.planId);
+			if (!expiry) {
+				return res.status(400).json({
+					error: "Invalid planId or expiry date calculation failed",
+				});
+			}
+
+			updateData.subscriptionDate = new Date();
+			updateData.expiryDate = expiry;
+		} else {
+			// אם ביטלו את המנוי
+			updateData.expiryDate = null;
+			updateData.subscriptionDate = null;
+		}
+
+		// עדכון בבסיס הנתונים
+		const vendorUser = await BusinessUser.findByIdAndUpdate(
+			req.params.vendorId,
+			{$set: updateData},
+			{new: true, runValidators: true},
+		).select("-password");
+
+		if (!vendorUser) return res.status(404).send("Vendor not found");
+
+		// create a new token
+		const token = jwt.sign(
+			_.pick(vendorUser, [
+				"_id",
+				"businessName",
+				"email",
+				"planId",
+				"isSubscribed",
+				"subscriptionDate",
+				"expiryDate",
+				"role",
+			]),
+			process.env.JWT_SECRET,
+			{expiresIn: "1d"},
+		);
+
+		res.status(200).json({
+			success: true,
+			message: `Subscription updated successfully to ${updateData.planId}`,
+			vendor: vendorUser,
+			token: token,
+		});
+	} catch (error) {
 		res.status(500).send(error.message);
 	}
 });

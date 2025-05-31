@@ -6,7 +6,12 @@ const serviceSchema = new mongoose.Schema(
 		email: {type: String, required: true},
 		phone: {type: String, required: true},
 		category: {type: String, required: true, index: true},
-		images: [{type: String}],
+		images: [
+			{
+				url: {type: String, url: true},
+				alt: {type: String},
+			},
+		],
 		services: [
 			{
 				featureName: {type: String, required: true},

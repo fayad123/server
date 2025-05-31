@@ -14,6 +14,17 @@ router.get("/", async (req, res) => {
 	}
 });
 
+router.get("/recommended-services", async (req, res) => {
+	try {
+		const recommendedServices = await Service.find({recommendedServices: true});
+		res.status(200).send(recommendedServices);
+	} catch (error) {
+		res.status(500).send(error.message);
+	}
+});
+
+
+
 // Add new picture
 router.post("/picture/:vendorId", auth, async (req, res) => {
 	try {
@@ -21,7 +32,8 @@ router.post("/picture/:vendorId", auth, async (req, res) => {
 
 		let service = await Service.findOne({vendorId: req.params.vendorId});
 		if (!service) return res.status(404).send("Service not found");
-		service.images.push(req.body.image);
+
+		service.images.push(req.body);
 
 		await service.save();
 
@@ -196,5 +208,6 @@ router.get("/search", async (req, res) => {
 		res.status(500).send(err.message);
 	}
 });
+
 
 module.exports = router;
