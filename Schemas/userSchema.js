@@ -1,6 +1,5 @@
 const joi = require("joi");
 
-
 // users
 const updatedUserJoiSchema = joi
 	.object({
