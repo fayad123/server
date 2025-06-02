@@ -19,7 +19,7 @@ const businessUserSchema = Joi.object({
 		street: Joi.string().required().min(2),
 	}),
 	category: Joi.string().required(),
-	isSubscribed: Joi.boolean().required(),
+	isSubscribed: Joi.boolean(),
 	planId: Joi.string()
 		.valid("free", "basic", "gold", "premium", "enterprise")
 		.default("free"),
@@ -68,6 +68,7 @@ router.post("/", async (req, res) => {
 			},
 			availableDates: [],
 			vendorId: user._id.toString(),
+			recommendedServices:false,
 		});
 		await service.save();
 
@@ -78,6 +79,7 @@ router.post("/", async (req, res) => {
 				"businessName",
 				"email",
 				"planId",
+				"role",
 				"isSubscribed",
 				"subscriptionDate",
 				"expiryDate",
@@ -105,12 +107,10 @@ const planeSchema = Joi.object({
 router.get("/:vendorId", async (req, res) => {
 	try {
 		// עדכון בבסיס הנתונים
-		const vendorPlane = await BusinessUser.findById(req.params.vendorId,{planId:1}).select(
-			"-password",
-		);
+		const vendorPlane = await BusinessUser.findById(req.params.vendorId, {
+			planId: 1,
+		}).select("-password");
 		if (!vendorPlane) return res.status(404).send("Vendor subscription not found");
-
-
 
 		res.status(200).send(vendorPlane);
 	} catch (error) {
