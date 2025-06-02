@@ -50,6 +50,21 @@ router.post("/", async (req, res) => {
 	}
 });
 
+// get customers users for (Admin)
+router.get("/customers", auth, async (req, res) => {
+	try {
+		if (req.payload.role !== "admin")
+			return res.status(403).send("Access denied. Admins only");
+
+		const users = await User.find().select("-password");
+		if (!users.length) return res.status(404).send("No customer users found");
+
+		res.status(200).send(users);
+	} catch (error) {
+		res.status(500).send(error);
+	}
+});
+
 // get user for (vendor)
 router.get("/for-vendors/:userId", auth, async (req, res) => {
 	try {
@@ -90,8 +105,8 @@ router.post("/login", async (req, res) => {
 		if (error) return res.status(400).send(error.details[0].message);
 
 		const [user, businessUsers] = await Promise.all([
-			User.findOne({email: req.body.email}),
-			BusinessUsers.findOne({email: req.body.email}),
+			User.findOne({email: req.body.email}).select("+password"),
+			BusinessUsers.findOne({email: req.body.email}).select("+password"),
 		]);
 
 		const foundUser = user || businessUsers;
@@ -119,36 +134,6 @@ router.post("/login", async (req, res) => {
 		res.status(200).send(token);
 	} catch (err) {
 		res.status(500).send(err.message);
-	}
-});
-
-// get customers users for (Admin)
-router.get("/customers", auth, async (req, res) => {
-	try {
-		if (req.payload.role !== "isAdmin")
-			return res.status(403).send("Access denied. Admins only");
-
-		const users = await User.find({role: "customer"}).select("-password");
-		if (!users.length) return res.status(404).send("No customer users found");
-
-		res.status(200).send(users);
-	} catch (error) {
-		res.status(500).send(error);
-	}
-});
-
-// get vindor user for (Admin)
-router.get("/vendor", auth, async (req, res) => {
-	try {
-		if (req.payload.role !== "isAdmin")
-			return res.status(403).send("Access denied. Admins only");
-
-		const users = await User.find({role: "isVendor"}).select("-password");
-		if (!users.length) return res.status(404).send("No vendor users found");
-
-		res.status(200).send(users);
-	} catch (error) {
-		res.status(500).send(error);
 	}
 });
 
