@@ -29,7 +29,10 @@ mongoose
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://client-eta-liard.vercel.app/"],
+    origin: [
+      "http://localhost:5173",
+      "https://client-hskzq1awq-fayads-projects-7a8b7e7e.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
