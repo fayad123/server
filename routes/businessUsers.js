@@ -12,14 +12,25 @@ const businessUserSchema = Joi.object({
 	businessName: Joi.string().required(),
 	phone: Joi.string().required(),
 	email: Joi.string().email().required(),
-	password: Joi.string().required(),
+	password: Joi.string()
+		.min(8)
+		.max(30)
+		.pattern(
+			new RegExp(
+				"^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).+$",
+			),
+		)
+		.message(
+			"Password must include at least one uppercase letter, one lowercase letter, one number, and one special character",
+		)
+		.required(),
 	images: Joi.array(),
 	address: Joi.object({
 		city: Joi.string().required().min(2),
 		street: Joi.string().required().min(2),
 	}),
 	category: Joi.string().required(),
-	isSubscribed: Joi.boolean().required(),
+	isSubscribed: Joi.boolean(),
 	planId: Joi.string()
 		.valid("free", "basic", "gold", "premium", "enterprise")
 		.default("free"),
@@ -68,6 +79,7 @@ router.post("/", async (req, res) => {
 			},
 			availableDates: [],
 			vendorId: user._id.toString(),
+			recommendedServices: false,
 		});
 		await service.save();
 
@@ -78,6 +90,7 @@ router.post("/", async (req, res) => {
 				"businessName",
 				"email",
 				"planId",
+				"role",
 				"isSubscribed",
 				"subscriptionDate",
 				"expiryDate",
@@ -101,16 +114,29 @@ const planeSchema = Joi.object({
 		.required(),
 });
 
+// get all vindors user for (Admin)
+router.get("/vendors", auth, async (req, res) => {
+	try {
+		if (req.payload.role !== "admin")
+			return res.status(403).send("Access denied. Admins only");
+
+		const users = await BusinessUser.find().select("-password");
+		if (!users.length) return res.status(404).send("No vendor users found");
+
+		res.status(200).send(users);
+	} catch (error) {
+		res.status(500).send(error.message);
+	}
+});
+
 // get user subscription
 router.get("/:vendorId", async (req, res) => {
 	try {
 		// עדכון בבסיס הנתונים
-		const vendorPlane = await BusinessUser.findById(req.params.vendorId,{planId:1}).select(
-			"-password",
-		);
+		const vendorPlane = await BusinessUser.findById(req.params.vendorId, {
+			planId: 1,
+		}).select("-password");
 		if (!vendorPlane) return res.status(404).send("Vendor subscription not found");
-
-
 
 		res.status(200).send(vendorPlane);
 	} catch (error) {
@@ -206,5 +232,7 @@ router.patch("/:vendorId", auth, async (req, res) => {
 		res.status(500).send(error.message);
 	}
 });
+
+
 
 module.exports = router;

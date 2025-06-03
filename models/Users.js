@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
 			city: {type: String, required: true},
 			street: {type: String, required: true},
 		},
-		role: {type: String, default: "customer"},
+		role: {type: String, enum: ["customer", "admin"], default: "customer"},
 		createdAt: {
 			type: Date,
 			default: Date.now,

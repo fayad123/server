@@ -11,6 +11,7 @@ const bookings = require("./routes/booking");
 const messages = require("./routes/messages");
 const users = require("./routes/users");
 const businessUsers = require("./routes/businessUsers");
+const videos = require("./routes/videos");
 
 const expressRoutes = require("express-list-routes");
 const {logger, logToFile} = require("./utils/logToFile");
@@ -26,7 +27,13 @@ mongoose
 
 // Middlewares
 app.use(express.json());
-app.use(cors());
+app.use(
+	cors({
+		origin: ["http://localhost:5173"],
+		methods: ["GET", "POST", "PUT", "DELETE"],
+		allowedHeaders: ["Content-Type", "Authorization"],
+	}),
+);
 app.use(helmet());
 app.use(logger);
 logToFile();
@@ -37,6 +44,7 @@ app.use("/api/users", users);
 app.use("/api/services", services);
 app.use("/api/bookings", bookings);
 app.use("/api/messages", messages);
+app.use("/api/videos", videos);
 
 // app litener
 app.listen(port, () => {
