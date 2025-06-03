@@ -1,5 +1,5 @@
 require("dotenv").config({
-	path: process.env.NODE_ENV === "development" ? ".env" : ".env.production",
+  path: process.env.NODE_ENV === "development" ? ".env" : ".env.production",
 });
 const express = require("express");
 const mongoose = require("mongoose");
@@ -14,26 +14,22 @@ const businessUsers = require("./routes/businessUsers");
 const videos = require("./routes/videos");
 
 const expressRoutes = require("express-list-routes");
-const {logger, logToFile} = require("./utils/logToFile");
+const { logger, logToFile } = require("./utils/logToFile");
 
 const app = express();
 
 const port = process.env.PORT;
 
 mongoose
-	.connect(process.env.MONGODB_URI)
-	.then(() => console.log(chalk.green("Connected to MongoDB")))
-	.catch((err) => console.error(chalk.red("MongoDB connection error:", err)));
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log(chalk.green("Connected to MongoDB")))
+  .catch((err) => console.error(chalk.red("MongoDB connection error:", err)));
 
 // Middlewares
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://client-hskzq1awq-fayads-projects-7a8b7e7e.vercel.app",
-      "client-eta-liard.vercel.app",
-    ],
+    origin: ["http://localhost:5173", "client-eta-liard.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -52,12 +48,12 @@ app.use("/api/videos", videos);
 
 // app litener
 app.listen(port, () => {
-	console.log("Server started on port", port);
+  console.log("Server started on port", port);
 });
 
 if (process.env.NODE_ENV === "development") {
-	console.log(chalk.bgWhite.red.bold("App is running in Development mode"));
-	expressRoutes(app);
+  console.log(chalk.bgWhite.red.bold("App is running in Development mode"));
+  expressRoutes(app);
 } else {
-	console.log(chalk.bgWhiteBright.bold("App is running in Production mode"));
+  console.log(chalk.bgWhiteBright.bold("App is running in Production mode"));
 }
