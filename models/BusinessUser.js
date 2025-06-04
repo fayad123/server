@@ -34,7 +34,6 @@ const businessUserSchema = new mongoose.Schema(
 		expiryDate: {type: Date},
 		recommendedServices: {type: Boolean, default: false},
 
-		// الحقول الجديدة المتعلقة بالحجوزات
 		maxBookingsPerDay: {type: Number, default: 1},
 		allowOverlappingBookings: {type: Boolean, default: false},
 		bookingDurationInHours: {type: Number, default: 2},

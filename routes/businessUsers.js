@@ -80,22 +80,10 @@ router.post("/", async (req, res) => {
 			availableDates: [],
 			vendorId: user._id.toString(),
 			recommendedServices: false,
-
-			// 👇👇 الإضافات الجديدة 👇👇
-
-			// أقصى عدد حجوزات في اليوم
 			maxBookingsPerDay: 1,
-
-			// هل يقبل حجزين بنفس الوقت؟
 			allowOverlappingBookings: false,
-
-			// مدة كل حجز بالساعات (مثلاً ساعتين)
 			bookingDurationInHours: 2,
-
-			// نوع الحجز
-			bookingType: "daily", // أو "hourly" أو "multi-booking"
-			
-			// ساعات العمل
+			bookingType: "daily",
 			workingHours: {
 				sunday: {from: "09:00", to: "17:00", closed: false},
 				monday: {from: "09:00", to: "17:00", closed: false},
