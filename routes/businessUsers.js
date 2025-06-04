@@ -80,6 +80,31 @@ router.post("/", async (req, res) => {
 			availableDates: [],
 			vendorId: user._id.toString(),
 			recommendedServices: false,
+
+			// 👇👇 الإضافات الجديدة 👇👇
+
+			// أقصى عدد حجوزات في اليوم
+			maxBookingsPerDay: 1,
+
+			// هل يقبل حجزين بنفس الوقت؟
+			allowOverlappingBookings: false,
+
+			// مدة كل حجز بالساعات (مثلاً ساعتين)
+			bookingDurationInHours: 2,
+
+			// نوع الحجز
+			bookingType: "daily", // أو "hourly" أو "multi-booking"
+			
+			// ساعات العمل
+			workingHours: {
+				sunday: {from: "09:00", to: "17:00", closed: false},
+				monday: {from: "09:00", to: "17:00", closed: false},
+				tuesday: {from: "09:00", to: "17:00", closed: false},
+				wednesday: {from: "09:00", to: "17:00", closed: false},
+				thursday: {from: "09:00", to: "17:00", closed: false},
+				friday: {from: "10:00", to: "14:00", closed: false},
+				saturday: {closed: true},
+			},
 		});
 		await service.save();
 
@@ -232,7 +257,5 @@ router.patch("/:vendorId", auth, async (req, res) => {
 		res.status(500).send(error.message);
 	}
 });
-
-
 
 module.exports = router;

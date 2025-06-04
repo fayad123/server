@@ -37,6 +37,29 @@ const serviceSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		planeId: {
+			type: String,
+		},
+		maxBookingsPerDay: {type: Number, default: 1},
+		allowOverlappingBookings: {type: Boolean, default: false},
+		bookingDurationInHours: {type: Number, default: 1},
+		bookingType: {
+			type: String,
+			enum: ["daily", "hourly", "multi-booking"],
+			default: "daily",
+		},
+		workingHours: {
+			type: Object,
+			default: {
+				sunday: {from: "09:00", to: "17:00", closed: false},
+				monday: {from: "09:00", to: "17:00", closed: false},
+				tuesday: {from: "09:00", to: "17:00", closed: false},
+				wednesday: {from: "09:00", to: "17:00", closed: false},
+				thursday: {from: "09:00", to: "17:00", closed: false},
+				friday: {closed: true},
+				saturday: {closed: true},
+			},
+		},
 	},
 	{timestamps: true},
 );
