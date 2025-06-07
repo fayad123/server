@@ -34,7 +34,7 @@ app.use(
 			"https://client-eta-liard.vercel.app",
 			"https://client-afrahna.vercel.app",
 		],
-		methods: ["GET", "POST", "PUT", "DELETE"],
+		methods: ["GET", "POST", "PUT","PATCH", "DELETE"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 	}),
 );
