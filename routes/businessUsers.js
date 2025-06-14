@@ -222,12 +222,12 @@ router.patch("/:vendorId", auth, async (req, res) => {
 			updateData.subscriptionDate = new Date();
 			updateData.expiryDate = expiry;
 		} else {
-			// אם ביטלו את המנוי
+			// אם בבוטל את המנוי
 			updateData.expiryDate = null;
 			updateData.subscriptionDate = null;
 		}
 
-		// עדכון בבסיס הנתונים
+		// update user plan
 		const vendorUser = await BusinessUser.findByIdAndUpdate(
 			req.params.vendorId,
 			{$set: updateData},
@@ -235,6 +235,14 @@ router.patch("/:vendorId", auth, async (req, res) => {
 		).select("-password");
 
 		if (!vendorUser) return res.status(404).send("Vendor not found");
+
+		if (["gold", "premium", "enterprise"].includes(value.planId)) {
+			await Service.findByIdAndUpdate(
+				req.params.vendorId,
+				{recommendedServices: true},
+				{new: true, runValidators: true},
+			);
+		}
 
 		// create a new token
 		const token = jwt.sign(
