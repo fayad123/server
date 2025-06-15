@@ -142,6 +142,21 @@ router.get("/vendors", auth, async (req, res) => {
 	}
 });
 
+// get vendor by id
+router.get("/vendors/:vendorId", auth, async (req, res) => {
+	if (req.payload.role !== "admin") return res.status(401).send("Not authorized");
+	try {
+		const vendor = await BusinessUser.findById(req.params.vendorId).select(
+			"-password",
+		);
+		if (!vendor) return res.status(404).send("Vendor not found");
+
+		res.status(200).send(vendor);
+	} catch (error) {
+		res.status(500).send(error.message);
+	}
+});
+
 // get user subscription
 router.get("/:vendorId", async (req, res) => {
 	try {
@@ -160,6 +175,8 @@ router.get("/:vendorId", async (req, res) => {
 // Update user subscription
 router.patch("/:vendorId", auth, async (req, res) => {
 	try {
+		if (req.payload._id !== req.params.vendorId)
+			return res.status(401).send("Unothorized");
 		// validate body
 		const {error, value} = planeSchema.validate(req.body);
 		if (error) return res.status(400).send(error.details[0].message);
@@ -205,12 +222,12 @@ router.patch("/:vendorId", auth, async (req, res) => {
 			updateData.subscriptionDate = new Date();
 			updateData.expiryDate = expiry;
 		} else {
-			// אם ביטלו את המנוי
+			// אם בבוטל את המנוי
 			updateData.expiryDate = null;
 			updateData.subscriptionDate = null;
 		}
 
-		// עדכון בבסיס הנתונים
+		// update user plan
 		const vendorUser = await BusinessUser.findByIdAndUpdate(
 			req.params.vendorId,
 			{$set: updateData},
@@ -218,6 +235,14 @@ router.patch("/:vendorId", auth, async (req, res) => {
 		).select("-password");
 
 		if (!vendorUser) return res.status(404).send("Vendor not found");
+
+		if (["gold", "premium", "enterprise"].includes(value.planId)) {
+			await Service.findByIdAndUpdate(
+				req.params.vendorId,
+				{recommendedServices: true},
+				{new: true, runValidators: true},
+			);
+		}
 
 		// create a new token
 		const token = jwt.sign(

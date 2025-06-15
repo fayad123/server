@@ -23,8 +23,6 @@ router.get("/recommended-services", async (req, res) => {
 	}
 });
 
-
-
 // Add new picture
 router.post("/picture/:vendorId", auth, async (req, res) => {
 	try {
