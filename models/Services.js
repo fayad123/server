@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const workingHoursSchema = require("./schemas/workingHoursSchema");
+const dayScheduleSchema = require("./schemas/dayScheduleSchema");
 
 const serviceSchema = new mongoose.Schema(
 	{
@@ -8,7 +10,7 @@ const serviceSchema = new mongoose.Schema(
 		category: {type: String, required: true, index: true},
 		images: [
 			{
-				url: {type: String, url: true},
+				url: {type: String},
 				alt: {type: String},
 			},
 		],
@@ -21,7 +23,7 @@ const serviceSchema = new mongoose.Schema(
 		priceType: {
 			type: String,
 			enum: ["fixed", "range"],
-			default: "fixed",
+			default: "range",
 		},
 		price: {
 			min: {type: Number},
@@ -37,9 +39,6 @@ const serviceSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		planeId: {
-			type: String,
-		},
 		maxBookingsPerDay: {type: Number, default: 1},
 		allowOverlappingBookings: {type: Boolean, default: false},
 		bookingDurationInHours: {type: Number, default: 1},
@@ -49,16 +48,8 @@ const serviceSchema = new mongoose.Schema(
 			default: "daily",
 		},
 		workingHours: {
-			type: Object,
-			default: {
-				sunday: {from: "09:00", to: "17:00", closed: false},
-				monday: {from: "09:00", to: "17:00", closed: false},
-				tuesday: {from: "09:00", to: "17:00", closed: false},
-				wednesday: {from: "09:00", to: "17:00", closed: false},
-				thursday: {from: "09:00", to: "17:00", closed: false},
-				friday: {closed: true},
-				saturday: {closed: true},
-			},
+			type: workingHoursSchema,
+			default: () => ({}),
 		},
 	},
 	{timestamps: true},
@@ -66,4 +57,34 @@ const serviceSchema = new mongoose.Schema(
 
 const Service = mongoose.model("Service", serviceSchema);
 
-module.exports = Service;
+function createDefaultServiceFromUser(user) {
+	return new Service({
+		businessName: user.businessName,
+		email: user.email,
+		phone: user.phone,
+		category: user.category,
+		images: user.images || [],
+		services: [],
+		description: "",
+		priceType: "fixed",
+		price: {
+			min: 0,
+			max: 0,
+		},
+		address: {
+			city: user.address.city,
+			street: user.address.street,
+		},
+		availableDates: [],
+		vendorId: user._id.toString(),
+		maxBookingsPerDay: 1,
+		allowOverlappingBookings: false,
+		bookingDurationInHours: 2,
+		bookingType: "daily",
+	});
+}
+
+module.exports = {
+	Service,
+	createDefaultServiceFromUser,
+};

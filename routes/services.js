@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const Service = require("../models/Services");
+const {Service} = require("../models/Services");
+const BusinessUser = require("../models/BusinessUser");
 const auth = require("../middlewares/auth");
 const {feauturesItemSchema} = require("../Schemas/servicesSchema");
 
@@ -14,14 +15,16 @@ router.get("/", async (req, res) => {
 	}
 });
 
-router.get("/recommended-services", async (req, res) => {
-	try {
-		const recommendedServices = await Service.find({recommendedServices: true});
-		res.status(200).send(recommendedServices);
-	} catch (error) {
-		res.status(500).send(error.message);
-	}
-});
+// router.get("/recommended-services", async (req, res) => {
+// 	try {
+// 		const recommendedServices = await BusinessUser.find({
+// 			"subscriptionData.recommendedServices": true,
+// 		});
+// 		res.status(200).send(recommendedServices);
+// 	} catch (error) {
+// 		res.status(500).send(error.message);
+// 	}
+// });
 
 // Add new picture
 router.post("/picture/:vendorId", auth, async (req, res) => {
@@ -38,6 +41,24 @@ router.post("/picture/:vendorId", auth, async (req, res) => {
 		res.status(200).send(service);
 	} catch (error) {
 		res.status(500).send(error);
+	}
+});
+
+// delete some picture
+router.delete("/picture/:vendorId", auth, async (req, res) => {
+	try {
+		if (req.payload._id !== req.params.vendorId && req.payload.role !== "admin")
+			return res.status(403).send("You can't delete this picture");
+		const {imageUrl} = req.body;
+		const service = await Service.findOne({vendorId: req.params.vendorId});
+		if (!service) return res.status(404).send("Service not found");
+
+		service.images = service.images.filter((img) => img.url !== imageUrl);
+
+		await service.save();
+		res.status(200).send(service);
+	} catch (err) {
+		res.status(500).send(err.message);
 	}
 });
 
@@ -63,11 +84,12 @@ router.get("/:userId", auth, async (req, res) => {
 	}
 });
 
-// get vendor by vendorId
+// get services by vendorId
 router.get("/vendor/:vendorId", async (req, res) => {
 	try {
 		const services = await Service.find({vendorId: req.params.vendorId});
-		res.status(200).send(services);
+		console.log(services);
+		return res.status(200).send(services);
 	} catch (err) {
 		res.status(500).send(err.message);
 	}
@@ -98,7 +120,7 @@ router.post("/:vendorId", auth, async (req, res) => {
 
 		// Create new service document for this vendor
 		if (!service) {
-			service = new Service({
+			service = new Services({
 				vendorId: req.params.vendorId,
 				businessName: req.body.businessName || "",
 				email: req.body.email || "",
@@ -168,44 +190,83 @@ router.delete("/:vendorId/:featureName", auth, async (req, res) => {
 });
 
 //search;
-router.get("/search", async (req, res) => {
-	try {
-		const query = {};
+// router.get("/search", async (req, res) => {
+// 	try {
+// 		const query = {};
 
-		if (req.query.businessName) {
-			// חיפוש לפי שם, רגולרי – לא רגיש לאותיות
-			query.businessName = {$regex: req.query.businessName, $options: "i"};
-		}
+// 		if (req.query.businessName) {
+// 			// חיפוש לפי שם, רגולרי – לא רגיש לאותיות
+// 			query.businessName = {$regex: req.query.businessName, $options: "i"};
+// 		}
 
-		if (req.query.category) {
-			query.category = req.query.category;
-		}
+// 		if (req.query.category) {
+// 			query.category = req.query.category;
+// 		}
 
-		if (req.query.city) {
-			query["address.city"] = req.query.city;
-		}
+// 		if (req.query.city) {
+// 			query["address.city"] = req.query.city;
+// 		}
 
-		if (req.query.minPrice || req.query.maxPrice) {
-			query["price.min"] = {};
-			if (req.query.minPrice) {
-				query["price.min"].$gte = parseFloat(req.query.minPrice);
-			}
-			if (req.query.maxPrice) {
-				query["price.min"].$lte = parseFloat(req.query.maxPrice);
-			}
-		}
+// 		if (req.query.minPrice || req.query.maxPrice) {
+// 			query["price.min"] = {};
+// 			if (req.query.minPrice) {
+// 				query["price.min"].$gte = parseFloat(req.query.minPrice);
+// 			}
+// 			if (req.query.maxPrice) {
+// 				query["price.min"].$lte = parseFloat(req.query.maxPrice);
+// 			}
+// 		}
 
-		const services = await Service.find(query);
+// 		const services = await Services.find(query);
 
-		if (!services.length) {
-			return res.status(404).send("No matching services found");
-		}
+// 		if (!services.length) {
+// 			return res.status(404).send("No matching services found");
+// 		}
 
-		res.status(200).send(services);
-	} catch (err) {
-		res.status(500).send(err.message);
-	}
-});
+// 		res.status(200).send(services);
+// 	} catch (err) {
+// 		res.status(500).send(err.message);
+// 	}
+// });
 
+//search;
+// router.get("/search", async (req, res) => {
+// 	try {
+// 		const query = {};
+
+// 		if (req.query.businessName) {
+// 			// חיפוש לפי שם, רגולרי – לא רגיש לאותיות
+// 			query.businessName = {$regex: req.query.businessName, $options: "i"};
+// 		}
+
+// 		if (req.query.category) {
+// 			query.category = req.query.category;
+// 		}
+
+// 		if (req.query.city) {
+// 			query["address.city"] = req.query.city;
+// 		}
+
+// 		if (req.query.minPrice || req.query.maxPrice) {
+// 			query["price.min"] = {};
+// 			if (req.query.minPrice) {
+// 				query["price.min"].$gte = parseFloat(req.query.minPrice);
+// 			}
+// 			if (req.query.maxPrice) {
+// 				query["price.min"].$lte = parseFloat(req.query.maxPrice);
+// 			}
+// 		}
+
+// 		const services = await Service.find(query);
+
+// 		if (!services.length) {
+// 			return res.status(404).send("No matching services found");
+// 		}
+
+// 		res.status(200).send(services);
+// 	} catch (err) {
+// 		res.status(500).send(err.message);
+// 	}
+// });
 
 module.exports = router;
