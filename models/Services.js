@@ -8,18 +8,24 @@ const serviceSchema = new mongoose.Schema(
 		email: {type: String, required: true},
 		phone: {type: String, required: true},
 		category: {type: String, required: true, index: true},
-		images: [
-			{
-				url: {type: String},
-				alt: {type: String},
-			},
-		],
-		services: [
-			{
-				featureName: {type: String, required: true},
-				price: {type: Number, required: true},
-			},
-		],
+		images: {
+			type: [
+				{
+					url: String,
+					alt: String,
+				},
+			],
+			default: [],
+		},
+		services: {
+			type: [
+				{
+					featureName: {type: String, required: true},
+					price: {type: Number, required: true},
+				},
+			],
+			default: [],
+		},
 		priceType: {
 			type: String,
 			enum: ["fixed", "range"],
@@ -37,6 +43,7 @@ const serviceSchema = new mongoose.Schema(
 		availableDates: [{type: Date}],
 		vendorId: {
 			type: String,
+			index: true,
 			required: true,
 		},
 		maxBookingsPerDay: {type: Number, default: 1},

@@ -67,44 +67,6 @@ router.post("/", async (req, res) => {
 		await user.save();
 
 		createDefaultServiceFromUser(user);
-		// let service = await BusinessUsers.findOne({email: user.email});
-		// if (service) return res.status(400).send("this service is exists");
-
-		// service = new Service({
-		// 	businessName: user.businessName,
-		// 	email: user.email,
-		// 	phone: user.phone,
-		// 	category: user.category,
-		// 	images: [],
-		// 	services: [],
-		// 	description: "",
-		// 	priceType: "fixed",
-		// 	price: {
-		// 		min: 0,
-		// 		max: 0,
-		// 	},
-		// 	address: {
-		// 		city: user.address.city,
-		// 		street: user.address.street,
-		// 	},
-		// 	availableDates: [],
-		// 	vendorId: user._id.toString(),
-		// 	recommendedServices: false,
-		// 	maxBookingsPerDay: 1,
-		// 	allowOverlappingBookings: false,
-		// 	bookingDurationInHours: 2,
-		// 	bookingType: "daily",
-		// 	workingHours: {
-		// 		sunday: {from: "09:00", to: "17:00", closed: false},
-		// 		monday: {from: "09:00", to: "17:00", closed: false},
-		// 		tuesday: {from: "09:00", to: "17:00", closed: false},
-		// 		wednesday: {from: "09:00", to: "17:00", closed: false},
-		// 		thursday: {from: "09:00", to: "17:00", closed: false},
-		// 		friday: {from: "10:00", to: "14:00", closed: false},
-		// 		saturday: {closed: true},
-		// 	},
-		// });
-		// await service.save();
 
 		// create token
 		const token = jwt.sign(
@@ -112,11 +74,8 @@ router.post("/", async (req, res) => {
 				"_id",
 				"businessName",
 				"email",
-				"planId",
 				"role",
-				"isSubscribed",
-				"subscriptionDate",
-				"expiryDate",
+				"subscriptionData",
 			]),
 			process.env.JWT_SECRET,
 			{expiresIn: "1d"},
@@ -144,9 +103,22 @@ router.get("/recommended-services", async (req, res) => {
 
 		// Extract and flatten services
 		const venIds = vendors.map((v) => v._id);
-		const services = await BusinessUsers.find({vendorId: {$in: venIds}}).lean();
-
-		res.status(200).send(services);
+		const services = await Service.find({vendorId: {$in: venIds}}).lean();
+		const servicess = services.map((vendor) => ({
+			_id: vendor._id,
+			vendorId: vendor._id, // לשימוש בפייבוריטס
+			businessName: vendor.businessName,
+			email: vendor.email,
+			phone: vendor.phone,
+			category: vendor.category,
+			address: vendor.address,
+			description: vendor.description || "",
+			images: vendor.images || [],
+			price: vendor.price || {min: 0, max: 0},
+			priceType: vendor.priceType || "",
+			services: vendor.services || [],
+		}));
+		res.status(200).send(servicess);
 	} catch (error) {
 		console.error("Error fetching recommended services:", error);
 		res.status(500).send(error.message);
@@ -405,7 +377,7 @@ router.patch("/vendor/subscribe/:vendorId", auth, async (req, res) => {
 			updateData.expiryDate = null;
 		}
 
-		const vendorObjectId =new mongoose.Types.ObjectId(vendorId);
+		const vendorObjectId = new mongoose.Types.ObjectId(vendorId);
 
 		const vendorUser = await BusinessUsers.findOneAndUpdate(
 			{_id: vendorId},
@@ -421,7 +393,6 @@ router.patch("/vendor/subscribe/:vendorId", auth, async (req, res) => {
 			},
 			{new: true, runValidators: true},
 		);
-
 
 		if (!vendorUser) {
 			console.log("Vendor not found for ID:", vendorId);
