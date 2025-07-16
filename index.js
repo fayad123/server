@@ -32,7 +32,6 @@ app.use(
 	cors({
 		origin: [
 			"http://localhost:5173",
-			"https://client-eta-liard.vercel.app",
 			"https://client-afrahna.vercel.app",
 		],
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
