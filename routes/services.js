@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const {Service} = require("../models/Services");
-const BusinessUser = require("../models/BusinessUser");
 const auth = require("../middlewares/auth");
 const {feauturesItemSchema} = require("../Schemas/servicesSchema");
+const Joi = require("joi");
+
 
 // gel all services
 router.get("/", async (req, res) => {
@@ -12,6 +13,35 @@ router.get("/", async (req, res) => {
 		res.status(200).send(services);
 	} catch (err) {
 		res.status(500).send(err.message);
+	}
+});
+
+const socialLinksSchema = Joi.object({
+	socialMediaLinks: Joi.object({
+		facebook: Joi.string().uri().allow(""),
+		instagram: Joi.string().uri().allow(""),
+		x: Joi.string().uri().allow(""),
+		youtube: Joi.string().uri().allow(""),
+		tikTok: Joi.string().uri().allow(""),
+	}).required(),
+});
+
+router.put("/social-links/:id", async (req, res) => {
+	const {error} = socialLinksSchema.validate(req.body);
+	if (error) return res.status(400).json({error: error.details[0].message});
+	try {
+		const vendor = await Service.findOneAndUpdate(
+			{vendorId: req.params.id},
+			{socialMediaLinks: req.body.socialMediaLinks},
+			{new: true},
+		);
+
+		// if (!vendor) return res.status(404).json({error: "Vendor not found"});
+
+		res.status(200).send(vendor.socialMediaLinks);
+	} catch (err) {
+		console.error("Error updating social links:", err);
+		res.status(500).json({error: "Server error"});
 	}
 });
 
@@ -89,7 +119,8 @@ router.get("/vendor/:vendorId", async (req, res) => {
 	try {
 		const services = await Service.find({vendorId: req.params.vendorId});
 		console.log(services);
-		if (services.length === 0) return res.status(404).send("No services found for this vendor");
+		if (services.length === 0)
+			return res.status(404).send("No services found for this vendor");
 		return res.status(200).send(services);
 	} catch (err) {
 		res.status(500).send(err.message);

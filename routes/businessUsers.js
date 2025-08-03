@@ -70,13 +70,7 @@ router.post("/", async (req, res) => {
 
 		// create token
 		const token = jwt.sign(
-			_.pick(user, [
-				"_id",
-				"businessName",
-				"email",
-				"role",
-				"subscriptionData",
-			]),
+			_.pick(user, ["_id", "businessName", "email", "role", "subscriptionData"]),
 			process.env.JWT_SECRET,
 			{expiresIn: "1d"},
 		);
@@ -114,6 +108,7 @@ router.get("/recommended-services", async (req, res) => {
 			address: vendor.address,
 			description: vendor.description || "",
 			images: vendor.images || [],
+			socialMediaLinks: vendor.socialMediaLinks,
 			price: vendor.price || {min: 0, max: 0},
 			priceType: vendor.priceType || "",
 			services: vendor.services || [],
@@ -169,6 +164,8 @@ router.get("/vendor/:vendorId", async (req, res) => {
 		res.status(500).send(error.message);
 	}
 });
+
+
 
 // router.get("/vendorSubscription/:vendorId", auth, async (req, res) => {
 // 	if (req.payload.role !== "admin") return res.status(401).send("Not authorized");

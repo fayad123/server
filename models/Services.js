@@ -17,6 +17,13 @@ const serviceSchema = new mongoose.Schema(
 			],
 			default: [],
 		},
+		socialMediaLinks: {
+			facebook: {type: String, default: ""},
+			instagram: {type: String, default: ""},
+			tikTok: {type: String, default: ""},
+			x: {type: String, default: ""},
+			youtube: {type: String, default: ""},
+		},
 		services: {
 			type: [
 				{
@@ -71,6 +78,13 @@ function createDefaultServiceFromUser(user) {
 		phone: user.phone,
 		category: user.category,
 		images: user.images || [],
+		socialMediaLinks: {
+			facebook: "",
+			instagram: "",
+			tikTok: "",
+			x: "",
+			youtube: "",
+		},
 		services: [],
 		description: "",
 		priceType: "fixed",
