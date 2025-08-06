@@ -66,7 +66,7 @@ router.post("/", async (req, res) => {
 		// save the user
 		await user.save();
 
-		createDefaultServiceFromUser(user);
+		await createDefaultServiceFromUser(user);
 
 		// create token
 		const token = jwt.sign(
@@ -164,8 +164,6 @@ router.get("/vendor/:vendorId", async (req, res) => {
 		res.status(500).send(error.message);
 	}
 });
-
-
 
 // router.get("/vendorSubscription/:vendorId", auth, async (req, res) => {
 // 	if (req.payload.role !== "admin") return res.status(401).send("Not authorized");

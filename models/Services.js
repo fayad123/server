@@ -71,8 +71,8 @@ const serviceSchema = new mongoose.Schema(
 
 const Service = mongoose.model("Service", serviceSchema);
 
-function createDefaultServiceFromUser(user) {
-	return new Service({
+const createDefaultServiceFromUser = async (user) => {
+	const service = new Service({
 		businessName: user.businessName,
 		email: user.email,
 		phone: user.phone,
@@ -97,13 +97,14 @@ function createDefaultServiceFromUser(user) {
 			street: user.address.street,
 		},
 		availableDates: [],
-		vendorId: user._id.toString(),
+		vendorId: user._id,
 		maxBookingsPerDay: 1,
 		allowOverlappingBookings: false,
 		bookingDurationInHours: 2,
 		bookingType: "daily",
 	});
-}
+	return await service.save();
+};
 
 module.exports = {
 	Service,

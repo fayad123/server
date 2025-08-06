@@ -118,8 +118,7 @@ router.get("/:userId", auth, async (req, res) => {
 router.get("/vendor/:vendorId", async (req, res) => {
 	try {
 		const services = await Service.find({vendorId: req.params.vendorId});
-		console.log(services);
-		if (services.length === 0)
+		if (!services)
 			return res.status(404).send("No services found for this vendor");
 		return res.status(200).send(services);
 	} catch (err) {
