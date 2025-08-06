@@ -116,7 +116,6 @@ router.post("/login", async (req, res) => {
 
 		const validPassword = compareSync(req.body.password, foundUser.password);
 		if (!validPassword) return res.status(400).send("Invalid email or password");
-console.log("✅ SubscribtionData:", foundUser.subscribtionData);
 		const tokenPayload = {
 			_id: foundUser._id,
 			role: foundUser.role,
@@ -134,7 +133,6 @@ console.log("✅ SubscribtionData:", foundUser.subscribtionData);
 			tokenPayload.category = foundUser.category;
 			tokenPayload.subscribtionData = foundUser.subscribtionData;
 		}
-		console.log("🎯 Payload:", tokenPayload);
 
 		const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {expiresIn: "7d"});
 		res.status(200).send(token);

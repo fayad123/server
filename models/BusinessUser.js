@@ -5,7 +5,6 @@ const workingHoursSchema = require("./schemas/workingHoursSchema");
 
 const businessUserSchema = new mongoose.Schema(
 	{
-		_id: {type: String},
 		businessName: {type: String, required: true},
 		phone: {type: String, required: true},
 		email: {type: String, required: true, unique: true},
