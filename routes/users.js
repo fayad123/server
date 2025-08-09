@@ -106,9 +106,7 @@ router.post("/login", async (req, res) => {
 
 		const [user, businessUsers] = await Promise.all([
 			User.findOne({email: req.body.email}).select("+password"),
-			BusinessUsers.findOne({email: req.body.email}).select(
-				"+password +subscribtionData",
-			),
+			BusinessUsers.findOne({email: req.body.email})
 		]);
 
 		const foundUser = user || businessUsers;

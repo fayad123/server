@@ -180,23 +180,19 @@ router.get("/vendor/:vendorId", async (req, res) => {
 // });
 
 // get vendor subscription
-router.get("/vendor/vendorSubscriptionData/:vendorId", auth, async (req, res) => {
+router.get("/vendorSubscriptionData/:vendorId", auth, async (req, res) => {
 	try {
 		if (req.payload.role !== "admin" && req.payload._id !== req.params.vendorId) {
 			return res.status(403).send("Admin access required");
 		}
 
-		const vendor = await BusinessUsers.find({
-			_id: ObjectId(req.params.vendorId),
-		}).select("subscriptionData");
-
-		const subscriptionData = vendor.subscriptionData;
+		const vendor = await BusinessUsers.findById(req.params.vendorId);
 
 		if (!vendor) {
 			return res.status(404).send("Vendor not found");
 		}
-
-		res.status(200).json(subscriptionData);
+		const subscriptionData = vendor.subscriptionData;
+		res.status(200).send(subscriptionData);
 	} catch (error) {
 		res.status(500).json({error: "Internal server error"});
 	}
