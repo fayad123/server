@@ -106,7 +106,7 @@ router.post("/login", async (req, res) => {
 
 		const [user, businessUsers] = await Promise.all([
 			User.findOne({email: req.body.email}).select("+password"),
-			BusinessUsers.findOne({email: req.body.email}).select("+password"),
+			BusinessUsers.findOne({email: req.body.email})
 		]);
 
 		const foundUser = user || businessUsers;
@@ -114,7 +114,6 @@ router.post("/login", async (req, res) => {
 
 		const validPassword = compareSync(req.body.password, foundUser.password);
 		if (!validPassword) return res.status(400).send("Invalid email or password");
-
 		const tokenPayload = {
 			_id: foundUser._id,
 			role: foundUser.role,
@@ -123,14 +122,17 @@ router.post("/login", async (req, res) => {
 				first: foundUser.name?.first,
 				last: foundUser.name?.last,
 			},
+			subscribtionData: foundUser.subscribtionData,
+			userType: user ? "user" : "business",
 		};
 
 		if (foundUser.businessName && foundUser.category) {
 			tokenPayload.businessName = foundUser.businessName;
 			tokenPayload.category = foundUser.category;
+			tokenPayload.subscribtionData = foundUser.subscribtionData;
 		}
 
-		const token = jwt.sign(tokenPayload, process.env.JWT_SECRET);
+		const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {expiresIn: "7d"});
 		res.status(200).send(token);
 	} catch (err) {
 		res.status(500).send(err.message);

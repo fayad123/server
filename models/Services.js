@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const workingHoursSchema = require("./schemas/workingHoursSchema");
+const dayScheduleSchema = require("./schemas/dayScheduleSchema");
 
 const serviceSchema = new mongoose.Schema(
 	{
@@ -6,22 +8,35 @@ const serviceSchema = new mongoose.Schema(
 		email: {type: String, required: true},
 		phone: {type: String, required: true},
 		category: {type: String, required: true, index: true},
-		images: [
-			{
-				url: {type: String, url: true},
-				alt: {type: String},
-			},
-		],
-		services: [
-			{
-				featureName: {type: String, required: true},
-				price: {type: Number, required: true},
-			},
-		],
+		images: {
+			type: [
+				{
+					url: String,
+					alt: String,
+				},
+			],
+			default: [],
+		},
+		socialMediaLinks: {
+			facebook: {type: String, default: ""},
+			instagram: {type: String, default: ""},
+			tikTok: {type: String, default: ""},
+			x: {type: String, default: ""},
+			youtube: {type: String, default: ""},
+		},
+		services: {
+			type: [
+				{
+					featureName: {type: String, required: true},
+					price: {type: Number, required: true},
+				},
+			],
+			default: [],
+		},
 		priceType: {
 			type: String,
 			enum: ["fixed", "range"],
-			default: "fixed",
+			default: "range",
 		},
 		price: {
 			min: {type: Number},
@@ -35,10 +50,8 @@ const serviceSchema = new mongoose.Schema(
 		availableDates: [{type: Date}],
 		vendorId: {
 			type: String,
+			index: true,
 			required: true,
-		},
-		planeId: {
-			type: String,
 		},
 		maxBookingsPerDay: {type: Number, default: 1},
 		allowOverlappingBookings: {type: Boolean, default: false},
@@ -49,16 +62,8 @@ const serviceSchema = new mongoose.Schema(
 			default: "daily",
 		},
 		workingHours: {
-			type: Object,
-			default: {
-				sunday: {from: "09:00", to: "17:00", closed: false},
-				monday: {from: "09:00", to: "17:00", closed: false},
-				tuesday: {from: "09:00", to: "17:00", closed: false},
-				wednesday: {from: "09:00", to: "17:00", closed: false},
-				thursday: {from: "09:00", to: "17:00", closed: false},
-				friday: {closed: true},
-				saturday: {closed: true},
-			},
+			type: workingHoursSchema,
+			default: () => ({}),
 		},
 	},
 	{timestamps: true},
@@ -66,4 +71,42 @@ const serviceSchema = new mongoose.Schema(
 
 const Service = mongoose.model("Service", serviceSchema);
 
-module.exports = Service;
+const createDefaultServiceFromUser = async (user) => {
+	const service = new Service({
+		businessName: user.businessName,
+		email: user.email,
+		phone: user.phone,
+		category: user.category,
+		images: user.images || [],
+		socialMediaLinks: {
+			facebook: "",
+			instagram: "",
+			tikTok: "",
+			x: "",
+			youtube: "",
+		},
+		services: [],
+		description: "",
+		priceType: "fixed",
+		price: {
+			min: 0,
+			max: 0,
+		},
+		address: {
+			city: user.address.city,
+			street: user.address.street,
+		},
+		availableDates: [],
+		vendorId: user._id,
+		maxBookingsPerDay: 1,
+		allowOverlappingBookings: false,
+		bookingDurationInHours: 2,
+		bookingType: "daily",
+	});
+	return await service.save();
+};
+
+module.exports = {
+	Service,
+	createDefaultServiceFromUser,
+};
