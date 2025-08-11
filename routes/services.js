@@ -5,7 +5,6 @@ const auth = require("../middlewares/auth");
 const {feauturesItemSchema} = require("../Schemas/servicesSchema");
 const Joi = require("joi");
 
-
 // gel all services
 router.get("/", async (req, res) => {
 	try {
@@ -44,17 +43,6 @@ router.put("/social-links/:id", async (req, res) => {
 		res.status(500).json({error: "Server error"});
 	}
 });
-
-// router.get("/recommended-services", async (req, res) => {
-// 	try {
-// 		const recommendedServices = await BusinessUser.find({
-// 			"subscriptionData.recommendedServices": true,
-// 		});
-// 		res.status(200).send(recommendedServices);
-// 	} catch (error) {
-// 		res.status(500).send(error.message);
-// 	}
-// });
 
 // Add new picture
 router.post("/picture/:vendorId", auth, async (req, res) => {
@@ -118,8 +106,7 @@ router.get("/:userId", auth, async (req, res) => {
 router.get("/vendor/:vendorId", async (req, res) => {
 	try {
 		const services = await Service.find({vendorId: req.params.vendorId});
-		if (!services)
-			return res.status(404).send("No services found for this vendor");
+		if (!services) return res.status(404).send("No services found for this vendor");
 		return res.status(200).send(services);
 	} catch (err) {
 		res.status(500).send(err.message);
@@ -220,84 +207,8 @@ router.delete("/:vendorId/:featureName", auth, async (req, res) => {
 	}
 });
 
-//search;
-// router.get("/search", async (req, res) => {
-// 	try {
-// 		const query = {};
 
-// 		if (req.query.businessName) {
-// 			// חיפוש לפי שם, רגולרי – לא רגיש לאותיות
-// 			query.businessName = {$regex: req.query.businessName, $options: "i"};
-// 		}
 
-// 		if (req.query.category) {
-// 			query.category = req.query.category;
-// 		}
 
-// 		if (req.query.city) {
-// 			query["address.city"] = req.query.city;
-// 		}
-
-// 		if (req.query.minPrice || req.query.maxPrice) {
-// 			query["price.min"] = {};
-// 			if (req.query.minPrice) {
-// 				query["price.min"].$gte = parseFloat(req.query.minPrice);
-// 			}
-// 			if (req.query.maxPrice) {
-// 				query["price.min"].$lte = parseFloat(req.query.maxPrice);
-// 			}
-// 		}
-
-// 		const services = await Services.find(query);
-
-// 		if (!services.length) {
-// 			return res.status(404).send("No matching services found");
-// 		}
-
-// 		res.status(200).send(services);
-// 	} catch (err) {
-// 		res.status(500).send(err.message);
-// 	}
-// });
-
-//search;
-// router.get("/search", async (req, res) => {
-// 	try {
-// 		const query = {};
-
-// 		if (req.query.businessName) {
-// 			// חיפוש לפי שם, רגולרי – לא רגיש לאותיות
-// 			query.businessName = {$regex: req.query.businessName, $options: "i"};
-// 		}
-
-// 		if (req.query.category) {
-// 			query.category = req.query.category;
-// 		}
-
-// 		if (req.query.city) {
-// 			query["address.city"] = req.query.city;
-// 		}
-
-// 		if (req.query.minPrice || req.query.maxPrice) {
-// 			query["price.min"] = {};
-// 			if (req.query.minPrice) {
-// 				query["price.min"].$gte = parseFloat(req.query.minPrice);
-// 			}
-// 			if (req.query.maxPrice) {
-// 				query["price.min"].$lte = parseFloat(req.query.maxPrice);
-// 			}
-// 		}
-
-// 		const services = await Service.find(query);
-
-// 		if (!services.length) {
-// 			return res.status(404).send("No matching services found");
-// 		}
-
-// 		res.status(200).send(services);
-// 	} catch (err) {
-// 		res.status(500).send(err.message);
-// 	}
-// });
 
 module.exports = router;

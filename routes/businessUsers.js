@@ -165,28 +165,11 @@ router.get("/vendor/:vendorId", async (req, res) => {
 	}
 });
 
-// router.get("/vendorSubscription/:vendorId", auth, async (req, res) => {
-// 	if (req.payload.role !== "admin") return res.status(401).send("Not authorized");
-// 	try {
-// 		const vendor = await BusinessUsers.findById(req.params.vendorId).select(
-// 			"-password",
-// 		);
-// 		if (!vendor) return res.status(404).send("Vendor not found");
-
-// 		res.status(200).send(vendor);
-// 	} catch (error) {
-// 		res.status(500).send(error.message);
-// 	}
-// });
-
 // get vendor subscription
-router.get("/vendorSubscriptionData/:vendorId", auth, async (req, res) => {
+router.get("/vendor/vendorSubscriptionData/:vendorId", async (req, res) => {
 	try {
-		if (req.payload.role !== "admin" && req.payload._id !== req.params.vendorId) {
-			return res.status(403).send("Admin access required");
-		}
-
-		const vendor = await BusinessUsers.findById(req.params.vendorId);
+		const uid = req.params.vendorId;
+		const vendor = await BusinessUsers.findOne({_id: uid});
 
 		if (!vendor) {
 			return res.status(404).send("Vendor not found");
@@ -198,107 +181,6 @@ router.get("/vendorSubscriptionData/:vendorId", auth, async (req, res) => {
 	}
 });
 
-// Update user subscription
-// router.patch("/vendor/subscribe/:vendorId", auth, async (req, res) => {
-// 	try {
-// 		if (req.payload._id !== req.params.vendorId && req.payload.role !== "admin")
-// 			return res.status(401).send("Unauthorized");
-
-// 		// validate body
-// 		const {error, value} = planeSchema.validate(req.body);
-// 		if (error) return res.status(400).send(error.details[0].message);
-
-// 		const planDurations = {
-// 			free: 0,
-// 			basic: 30,
-// 			gold: 30,
-// 			premium: 30,
-// 			enterprise: 30,
-// 		};
-
-// 		const getExpiryDate = (planId) => {
-// 			const duration = planDurations[planId];
-// 			if (duration === undefined) return null;
-
-// 			const expiryDate = new Date();
-// 			expiryDate.setDate(expiryDate.getDate() + duration);
-// 			return expiryDate;
-// 		};
-
-// 		if (!mongoose.Types.ObjectId.isValid(req.params.vendorId)) {
-// 			return res.status(400).send("Invalid vendor ID format.");
-// 		}
-
-// 		const updateData = {
-// 			isSubscribed: value.isSubscribed,
-// 			planId: value.planId,
-// 			recommendedServices: ["premium", "enterprise"].includes(value.planId),
-// 			subscriptionDate: null,
-// 			expiryDate: null,
-// 		};
-
-// 		// אם רוצים להירשם
-// 		if (value.isSubscribed) {
-// 			if (value.planId === "free") {
-// 				return res.status(400).json({
-// 					success: false,
-// 					message: "Cannot subscribe to the free package",
-// 				});
-// 			}
-
-// 			const expiry = getExpiryDate(value.planId);
-// 			if (!expiry) {
-// 				return res.status(400).json({
-// 					error: "Invalid planId or expiry date calculation failed",
-// 				});
-// 			}
-
-// 			updateData.subscriptionDate = new Date();
-// 			updateData.expiryDate = expiry;
-// 		} else {
-// 			// אם בבוטל את המנוי
-// 			updateData.expiryDate = null;
-// 			updateData.subscriptionDate = null;
-// 		}
-
-// 		// update user plan
-// 		await BusinessUsers.findByIdAndUpdate(
-// 			req.params.vendorId,
-// 			{
-// 				$set: {
-// 					"subscriptionData.isSubscribed": updateData.isSubscribed,
-// 					"subscriptionData.planId": updateData.planId,
-// 					"subscriptionData.subscriptionDate": updateData.subscriptionDate,
-// 					"subscriptionData.expiryDate": updateData.expiryDate,
-// 					"subscriptionData.recommendedServices":
-// 						updateData.recommendedServices,
-// 				},
-// 			},
-// 			{new: true, runValidators: true},
-// 		);
-
-// 		if (!vendorUser) return res.status(404).send("Vendor not found");
-
-// 		const payload = {
-// 			_id: vendorUser._id,
-// 			businessName: vendorUser.businessName,
-// 			email: vendorUser.email,
-// 			role: vendorUser.role,
-// 			subscriptionData: vendorUser.subscriptionData,
-// 		};
-
-// 		// create a new token
-// 		const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: "1d"});
-
-// 		res.status(200).json({
-// 			vendor: vendorUser,
-// 			token: token,
-// 		});
-// 	} catch (error) {
-// 		console.error("Update error:", error);
-// 		res.status(500).send(error.message);
-// 	}
-// });
 // Update user subscription
 router.patch("/vendor/subscribe/:vendorId", auth, async (req, res) => {
 	try {

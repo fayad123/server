@@ -12,6 +12,7 @@ const messages = require("./routes/messages");
 const users = require("./routes/users");
 const businessUsers = require("./routes/businessUsers");
 const videos = require("./routes/videos");
+// const Search = require("./routes/search");
 
 const expressRoutes = require("express-list-routes");
 const {logger, logToFile} = require("./utils/logToFile");
@@ -30,10 +31,7 @@ mongoose
 app.use(express.json());
 app.use(
 	cors({
-		origin: [
-			"http://localhost:5173",
-			"https://client-afrahna.vercel.app",
-		],
+		origin: ["http://localhost:5173", "https://client-afrahna.vercel.app"],
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 	}),
@@ -50,6 +48,7 @@ app.use("/api/services", services);
 app.use("/api/bookings", bookings);
 app.use("/api/messages", messages);
 app.use("/api/videos", videos);
+// app.use("/api/search", Search);
 
 // app litener
 app.listen(port, () => {
