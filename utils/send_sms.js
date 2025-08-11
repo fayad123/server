@@ -17,8 +17,8 @@ async function sendSms(to, message) {
 
 		const sms = await client.messages.create({
 			body: message,
-			to, // מספר היעד
-			messagingServiceSid,
+			from: "+12695756419",
+			to: "+972538346915",
 		});
 
 		console.log("✅ SMS sent successfully:", sms.sid);
