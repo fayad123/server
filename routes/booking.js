@@ -35,6 +35,22 @@ router.post("/", auth, async (req, res) => {
 
 		await newBooking.save();
 
+		const vendor = await BusinessUser.findById(req.body.vendorId);
+		if (!vendor || !vendor.phone) {
+			return res.status(400).send("Vendor phone number is missing");
+		}
+
+		let phone = vendor.phone.trim();
+		if (phone.startsWith("0")) {
+			phone = phone.slice(1);
+		}
+		phone = `+972${phone}`;
+
+		const message = `تم إرسال الطلب لتاريخ ${
+			req.body.date
+		} مع الخدمات التالية: ${req.body.services.map((s) => s.featureName).join(", ")}
+سيتم التواصل معك قريبًا لتأكيد الطلب ${vendor.phone}`;
+
 		res.status(201).send(newBooking);
 	} catch (error) {
 		console.error(error);
