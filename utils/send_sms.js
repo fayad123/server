@@ -18,8 +18,7 @@ async function sendSms(to, message) {
 		const sms = await client.messages.create({
 			body: message,
 			to, // מספר היעד
-			from: "+12695756419",
-			messagingServiceSid, // שירות הודעות של Twilio
+			messagingServiceSid,
 		});
 
 		console.log("✅ SMS sent successfully:", sms.sid);

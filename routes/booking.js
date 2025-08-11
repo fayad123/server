@@ -3,6 +3,7 @@ const router = express.Router();
 const Booking = require("../models/Booking");
 const auth = require("../middlewares/auth");
 const Joi = require("joi");
+const sendSms = require("../utils/send_sms");
 
 const bookingSchema = Joi.object({
 	date: Joi.string().isoDate().required(),
@@ -50,6 +51,8 @@ router.post("/", auth, async (req, res) => {
 			req.body.date
 		} مع الخدمات التالية: ${req.body.services.map((s) => s.featureName).join(", ")}
 سيتم التواصل معك قريبًا لتأكيد الطلب ${vendor.phone}`;
+
+		const sms = await sendSms(phone, message);
 
 		res.status(201).send(newBooking);
 	} catch (error) {
