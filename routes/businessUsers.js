@@ -100,7 +100,7 @@ router.get("/recommended-services", async (req, res) => {
 		const services = await Service.find({vendorId: {$in: venIds}}).lean();
 		const result = services.map((vendor) => ({
 			_id: vendor._id,
-			vendorId: vendor.vendorId,
+			vendorId: services.vendorId,
 			businessName: vendor.businessName,
 			email: vendor.email,
 			phone: vendor.phone,
