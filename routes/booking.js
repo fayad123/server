@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Booking = require("../models/Booking");
+const BusinessUser = require("../models/BusinessUser");
 const auth = require("../middlewares/auth");
 const Joi = require("joi");
 const sendSms = require("../utils/send_sms");
@@ -36,23 +37,39 @@ router.post("/", auth, async (req, res) => {
 
 		await newBooking.save();
 
+		// Get vendor info
 		const vendor = await BusinessUser.findById(req.body.vendorId);
-		if (!vendor || !vendor.phone) {
+		if (!vendor) {
+			return res.status(404).send("Vendor not found");
+		}
+		if (!vendor.phone) {
 			return res.status(400).send("Vendor phone number is missing");
 		}
 
-		let phone = vendor.phone.trim();
+		// Format phone number
+		let phone = vendor.phone.trim().replace(/[\s-]/g, ""); // Remove spaces and dashes
+
+		// Convert local format (0xxxxxxxx) to international (+972xxxxxxxxx)
 		if (phone.startsWith("0")) {
-			phone = phone.slice(1);
+			phone = `+972${phone.substring(1)}`;
 		}
-		phone = `+972${phone}`;
+		// Add + if missing (assuming it's an Israeli number)
+		else if (!phone.startsWith("+")) {
+			phone = `+972${phone}`;
+		}
 
-		const message = `تم إرسال الطلب لتاريخ ${
-			req.body.date
-		} مع الخدمات التالية: ${req.body.services.map((s) => s.featureName).join(", ")}
-سيتم التواصل معك قريبًا لتأكيد الطلب ${vendor.phone}`;
+		// Validate phone format
+		if (!/^\+972\d{9}$/.test(phone)) {
+			return res.status(400).send("Invalid vendor phone number format");
+		}
 
-		const sms = await sendSms(phone, message);
+		// Prepare SMS message
+		const servicesList = req.body.services.map((s) => s.featureName).join(", ");
+		const message = `تم إرسال الطلب لتاريخ ${req.body.date} مع الخدمات التالية: ${servicesList}
+سيتم التواصل معك قريبًا لتأكيد الطلب`;
+
+		// Send SMS
+		await sendSms(phone, message);
 
 		res.status(201).send(newBooking);
 	} catch (error) {

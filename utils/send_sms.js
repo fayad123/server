@@ -3,9 +3,9 @@ const twilio = require("twilio");
 require("dotenv").config();
 
 // קח את הנתונים מקובץ .env
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+const accountSid = process.env.NODE_ACCOUNT_SID;
+const authToken = process.env.NODE_AUTH_TOKEN;
+const messagingServiceSid = process.env.NODE_MESSAGING_SERVICE_SID;
 
 const client = twilio(accountSid, authToken);
 
@@ -17,8 +17,8 @@ async function sendSms(to, message) {
 
 		const sms = await client.messages.create({
 			body: message,
-			from: "+12695756419",
-			to: "+972538346915",
+			messagingServiceSid: messagingServiceSid,
+			to: to,
 		});
 
 		console.log("✅ SMS sent successfully:", sms.sid);

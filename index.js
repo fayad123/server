@@ -38,7 +38,7 @@ app.use(
 );
 app.use(helmet());
 app.use(logger);
-app.use(morgan("combined"));
+app.use(morgan());
 logToFile();
 
 // routes
