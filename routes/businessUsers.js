@@ -96,22 +96,24 @@ router.get("/recommended-services", async (req, res) => {
 		}
 
 		// Extract and flatten services
-		const venIds = vendors.map((v) => v._id);
-		const services = await Service.find({vendorId: {$in: venIds}}).lean();
-		const servicess = services.map((vendor) => ({
-			_id: vendor._id,
-			vendorId: vendor._id,
-			businessName: vendor.businessName,
-			email: vendor.email,
-			phone: vendor.phone,
-			category: vendor.category,
-			address: vendor.address,
-			description: vendor.description || "",
-			images: vendor.images || [],
-			socialMediaLinks: vendor.socialMediaLinks,
-			price: vendor.price || {min: 0, max: 0},
-			priceType: vendor.priceType || "",
-			services: vendor.services || [],
+		const venIds = vendors.map((v) => mongoose.Types.ObjectId(v._id));
+		const servicesWithVendor = await Service.find({vendorId: {$in: venIds}}).populate(
+			"vendorId",
+		);
+		const servicess = servicesWithVendor.map((service) => ({
+			_id: service._id,
+			vendorId: service.vendorId,
+			businessName: service.businessName,
+			email: service.email,
+			phone: service.phone,
+			category: service.category,
+			address: service.address,
+			description: service.description || "",
+			images: service.images || [],
+			socialMediaLinks: service.socialMediaLinks,
+			price: service.price || {min: 0, max: 0},
+			priceType: service.priceType || "",
+			services: service.services || [],
 		}));
 		res.status(200).send(servicess);
 	} catch (error) {
