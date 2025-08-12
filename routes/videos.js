@@ -83,7 +83,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // העלאת וידאו
-router.post("/upload", upload.single("file"), (req, res) => {
+router.post("/upload", upload.single("video"), (req, res) => {
 	if (!gfsBucket) return res.status(500).send("GridFSBucket not initialized");
 
 	const readableStream = Readable.from(req.file.buffer);
