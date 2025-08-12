@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const workingHoursSchema = require("./schemas/workingHoursSchema");
-const dayScheduleSchema = require("./schemas/dayScheduleSchema");
 
 const serviceSchema = new mongoose.Schema(
 	{
@@ -49,7 +48,7 @@ const serviceSchema = new mongoose.Schema(
 		},
 		availableDates: [{type: Date}],
 		vendorId: {
-			type: new mongoose.Schema.Types.ObjectId,
+			type: String,
 			ref: "BusinessUser",
 			index: true,
 			required: true,
