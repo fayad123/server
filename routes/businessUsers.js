@@ -91,31 +91,29 @@ router.get("/recommended-services", async (req, res) => {
 			"subscriptionData.recommendedServices": true,
 		}).select("-password");
 
-		if (!vendors || vendors.length === 0) {
+		if (!vendors) {
 			return res.status(404).send("No recommended services found");
 		}
 
 		// Extract and flatten services
-		const venIds = vendors.map((v) => mongoose.Types.ObjectId(v._id));
-		const servicesWithVendor = await Service.find({vendorId: {$in: venIds}}).populate(
-			"vendorId",
-		);
-		const servicess = servicesWithVendor.map((service) => ({
-			_id: service._id,
-			vendorId: service.vendorId,
-			businessName: service.businessName,
-			email: service.email,
-			phone: service.phone,
-			category: service.category,
-			address: service.address,
-			description: service.description || "",
-			images: service.images || [],
-			socialMediaLinks: service.socialMediaLinks,
-			price: service.price || {min: 0, max: 0},
-			priceType: service.priceType || "",
-			services: service.services || [],
+		const venIds = vendors.map((v) => v._id);
+		const services = await Service.find({vendorId: {$in: venIds}}).lean();
+		const result = services.map((vendor) => ({
+			_id: vendor._id,
+			vendorId: vendor.vendorId,
+			businessName: vendor.businessName,
+			email: vendor.email,
+			phone: vendor.phone,
+			category: vendor.category,
+			address: vendor.address,
+			description: vendor.description || "",
+			images: vendor.images || [],
+			socialMediaLinks: vendor.socialMediaLinks,
+			price: vendor.price || {min: 0, max: 0},
+			priceType: vendor.priceType || "",
+			services: vendor.services || [],
 		}));
-		res.status(200).send(servicess);
+		res.status(200).send(result);
 	} catch (error) {
 		console.error("Error fetching recommended services:", error);
 		res.status(500).send(error.message);
