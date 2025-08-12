@@ -62,11 +62,16 @@ router.post("/", auth, async (req, res) => {
 		if (!/^\+972\d{9}$/.test(phone)) {
 			return res.status(400).send("Invalid vendor phone number format");
 		}
+		const date = new Date(req.body.date);
+		const formattedDate = date.toLocaleDateString("he-IL", {
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+		});
 
 		// Prepare SMS message
 		const servicesList = req.body.services.map((s) => s.featureName).join(", ");
-		const message = `تم إرسال الطلب لتاريخ ${req.body.date} مع الخدمات التالية: ${servicesList}
-سيتم التواصل معك قريبًا لتأكيد الطلب`;
+		const message = `تم إرسال الطلب لتاريخ ${formattedDate} مع الخدمات التالية:\n${servicesList}\n\nللمتابعة، يرجى زيارة الرابط:\nhttps://client-afrahna.vercel.app/login`;
 
 		// Send SMS
 		await sendSms(phone, message);
