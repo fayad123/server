@@ -49,7 +49,7 @@ const serviceSchema = new mongoose.Schema(
 		},
 		availableDates: [{type: Date}],
 		vendorId: {
-			type: mongoose.Schema.Types.ObjectId,
+			type: new mongoose.Schema.Types.ObjectId,
 			ref: "BusinessUser",
 			index: true,
 			required: true,
