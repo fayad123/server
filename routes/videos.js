@@ -5,24 +5,24 @@ const {GridFSBucket} = require("mongodb");
 const {Readable} = require("stream");
 
 const router = express.Router();
-router.options("/upload", (req, res) => {
-	res.setHeader("Access-Control-Allow-Origin", "*");
-	res.setHeader("Access-Control-Allow-Methods", "POST");
-	res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-	res.status(200).end();
-});
+// router.options("/upload", (req, res) => {
+// 	res.setHeader("Access-Control-Allow-Origin", "*");
+// 	res.setHeader("Access-Control-Allow-Methods", "POST");
+// 	res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+// 	res.status(200).end();
+// });
 
-const validateFile = (req, res, next) => {
-	if (!req.file) return res.status(400).json({error: "No file provided"});
-	if (req.file.size > 100 * 1024 * 1024) {
-		// 100MB limit
-		return res.status(400).json({error: "File too large"});
-	}
-	if (!req.file.mimetype.startsWith("video/")) {
-		return res.status(400).json({error: "Only video files are allowed"});
-	}
-	next();
-};
+// const validateFile = (req, res, next) => {
+// 	if (!req.file) return res.status(400).json({error: "No file provided"});
+// 	if (req.file.size > 100 * 1024 * 1024) {
+// 		// 100MB limit
+// 		return res.status(400).json({error: "File too large"});
+// 	}
+// 	if (!req.file.mimetype.startsWith("video/")) {
+// 		return res.status(400).json({error: "Only video files are allowed"});
+// 	}
+// 	next();
+// };
 
 const {ObjectId} = mongoose.Types;
 const conn = mongoose.connection;
@@ -83,7 +83,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // העלאת וידאו
-router.post("/upload", upload.single("video"), (req, res) => {
+router.post("/upload", upload.single("file"), (req, res) => {
 	if (!gfsBucket) return res.status(500).send("GridFSBucket not initialized");
 
 	const readableStream = Readable.from(req.file.buffer);
