@@ -1,5 +1,5 @@
 require("dotenv").config({
-	path: process.env.NODE_ENV === "development" ? ".env" : ".env.production",
+	path: [`.env.production`, `.env`],
 });
 const express = require("express");
 const mongoose = require("mongoose");
@@ -11,7 +11,6 @@ const bookings = require("./routes/booking");
 const messages = require("./routes/messages");
 const users = require("./routes/users");
 const businessUsers = require("./routes/businessUsers");
-const videos = require("./routes/videos");
 // const Search = require("./routes/search");
 
 const expressRoutes = require("express-list-routes");
@@ -55,7 +54,6 @@ app.use("/api/users", users);
 app.use("/api/services", services);
 app.use("/api/bookings", bookings);
 app.use("/api/messages", messages);
-app.use("/api/videos", videos);
 // app.use("/api/search", Search);
 
 // app litener
