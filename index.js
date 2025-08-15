@@ -11,7 +11,7 @@ const bookings = require("./routes/booking");
 const messages = require("./routes/messages");
 const users = require("./routes/users");
 const businessUsers = require("./routes/businessUsers");
-// const Search = require("./routes/search");
+const specialOffersRoutes = require("./routes/specialOffers");
 
 const expressRoutes = require("express-list-routes");
 const {logger, logToFile} = require("./utils/logToFile");
@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 
 app.use(helmet());
 app.use(logger);
-// app.use(morgan("combined"));
+app.use(morgan("dev"));
 logToFile();
 
 // routes
@@ -54,8 +54,7 @@ app.use("/api/users", users);
 app.use("/api/services", services);
 app.use("/api/bookings", bookings);
 app.use("/api/messages", messages);
-// app.use("/api/search", Search);
-
+app.use("/api/special-offers", specialOffersRoutes);
 // app litener
 app.listen(port, () => {
 	console.log("Server started on port", port);
