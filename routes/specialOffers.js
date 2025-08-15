@@ -48,7 +48,7 @@ router.get("/:id", async (req, res) => {
 
 // Create a new offer
 router.post("/", auth, async (req, res) => {
-	const { _id, businessName, category } = req.payload;
+	const {_id, businessName, category} = req.payload;
 
 	try {
 		// إنشاء عرض جديد
@@ -67,12 +67,11 @@ router.post("/", auth, async (req, res) => {
 	}
 });
 
-
 // Edit an existing offer
 router.put("/:id", async (req, res) => {
 	try {
-		const updatedOffer = await SpecialOffers.findByIdAndUpdate(
-			req.params.id,
+		const updatedOffer = await SpecialOffers.findOneAndUpdate(
+			{vendorId: req.params.id},
 			req.body,
 			{new: true, runValidators: true},
 		);
@@ -84,10 +83,15 @@ router.put("/:id", async (req, res) => {
 });
 
 //  Remove width offer by id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
 	try {
 		const deletedOffer = await SpecialOffers.findByIdAndDelete(req.params.id);
+
+		if (deletedOffer.vendorId !== req.payload._id && req.payload.role !== "isAdmin")
+			return res.status(403).send("Unautorize");
+
 		if (!deletedOffer) return res.status(404).send("Offer not found");
+
 		res.status(200).send("Offer deleted successfully");
 	} catch (err) {
 		res.status(500).send(err.message);
