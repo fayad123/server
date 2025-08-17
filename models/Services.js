@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const workingHoursSchema = require("./schemas/workingHoursSchema");
-const dayScheduleSchema = require("./schemas/dayScheduleSchema");
 
 const serviceSchema = new mongoose.Schema(
 	{

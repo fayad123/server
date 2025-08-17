@@ -1,5 +1,5 @@
 require("dotenv").config({
-	path: process.env.NODE_ENV === "development" ? ".env" : ".env.production",
+	path: [`.env.production`, `.env`],
 });
 const express = require("express");
 const mongoose = require("mongoose");
@@ -11,7 +11,7 @@ const bookings = require("./routes/booking");
 const messages = require("./routes/messages");
 const users = require("./routes/users");
 const businessUsers = require("./routes/businessUsers");
-const videos = require("./routes/videos");
+const specialOffersRoutes = require("./routes/specialOffers");
 
 const expressRoutes = require("express-list-routes");
 const {logger, logToFile} = require("./utils/logToFile");
@@ -30,17 +30,22 @@ mongoose
 app.use(express.json());
 app.use(
 	cors({
-		origin: [
-			"http://localhost:5173",
-			"https://client-afrahna.vercel.app",
-		],
-		methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+		origin: ["http://localhost:5173", "https://client-afrahna.vercel.app"],
+		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 	}),
 );
+
+app.use((req, res, next) => {
+	res.setHeader("Access-Control-Allow-Origin", "*");
+	res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+	res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+	next();
+});
+
 app.use(helmet());
 app.use(logger);
-app.use(morgan("combined"));
+app.use(morgan("dev"));
 logToFile();
 
 // routes
@@ -49,8 +54,7 @@ app.use("/api/users", users);
 app.use("/api/services", services);
 app.use("/api/bookings", bookings);
 app.use("/api/messages", messages);
-app.use("/api/videos", videos);
-
+app.use("/api/special-offers", specialOffersRoutes);
 // app litener
 app.listen(port, () => {
 	console.log("Server started on port", port);

@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const Booking = require("../models/Booking");
+const BusinessUser = require("../models/BusinessUser");
 const auth = require("../middlewares/auth");
 const Joi = require("joi");
+const sendSms = require("../utils/send_sms");
 
 const bookingSchema = Joi.object({
 	date: Joi.string().isoDate().required(),
@@ -34,6 +36,45 @@ router.post("/", auth, async (req, res) => {
 		});
 
 		await newBooking.save();
+
+		// Get vendor info
+		const vendor = await BusinessUser.findById(req.body.vendorId);
+		if (!vendor) {
+			return res.status(404).send("Vendor not found");
+		}
+		if (!vendor.phone) {
+			return res.status(400).send("Vendor phone number is missing");
+		}
+
+		// Format phone number
+		let phone = vendor.phone.trim().replace(/[\s-]/g, ""); // Remove spaces and dashes
+
+		// Convert local format (0xxxxxxxx) to international (+972xxxxxxxxx)
+		if (phone.startsWith("0")) {
+			phone = `+972${phone.substring(1)}`;
+		}
+		// Add + if missing (assuming it's an Israeli number)
+		else if (!phone.startsWith("+")) {
+			phone = `+972${phone}`;
+		}
+
+		// Validate phone format
+		if (!/^\+972\d{9}$/.test(phone)) {
+			return res.status(400).send("Invalid vendor phone number format");
+		}
+		const date = new Date(req.body.date);
+		const formattedDate = date.toLocaleDateString("he-IL", {
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+		});
+
+		// Prepare SMS message
+		const servicesList = req.body.services.map((s) => s.featureName).join(", ");
+		const message = `تم إرسال الطلب لتاريخ ${formattedDate} مع الخدمات التالية:\n${servicesList}\n\nللمتابعة، يرجى زيارة الرابط:\nhttps://client-afrahna.vercel.app/login`;
+
+		// Send SMS
+		await sendSms(phone, message);
 
 		res.status(201).send(newBooking);
 	} catch (error) {
