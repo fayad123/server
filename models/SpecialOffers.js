@@ -4,16 +4,16 @@ const imageSchema = new mongoose.Schema({
 	url: {
 		type: String,
 		default: "",
-		validate: {
-			validator: function (v) {
-				// Only validate if URL is provided
-				return (
-					v === "" ||
-					/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(v)
-				);
-			},
-			message: (props) => `${props.value} is not a valid URL!`,
-		},
+		// validate: {
+		// 	validator: function (v) {
+		// 		// Only validate if URL is provided
+		// 		return (
+		// 			v === "" ||
+		// 			/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(v)
+		// 		);
+		// 	},
+		// 	message: (props) => `${props.value} is not a valid URL!`,
+		// },
 	},
 	alt: {
 		type: String,
@@ -71,13 +71,11 @@ const specialOffersSchema = new mongoose.Schema(
 		},
 	},
 	{
-		timestamps: true,
-		toJSON: {virtuals: true},
-		toObject: {virtuals: true},
+		timestamps: true
 	},
 );
 
-// Add compound index for frequently queried fields
+// compound index for frequently queried fields
 specialOffersSchema.index({vendorId: 1, createdAt: -1});
 
 const SpecialOffers = mongoose.model("SpecialOffers", specialOffersSchema);
